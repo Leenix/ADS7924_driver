@@ -130,37 +130,21 @@ typedef union {
 ///////////////////////////////////////////////////////////////////////////////
 // INTCNTRL
 
-/**
- * Interrupt control register - INTCNTRL
- * Enables alarm interrupts on specified channels.
- *
- * @param raw: Register as a raw byte
- * @param ch0_alarm_enabled True to enable alarm interrupts on channel 0
- * @param ch1_alarm_enabled True to enable alarm interrupts on channel 1
- * @param ch2_alarm_enabled True to enable alarm interrupts on channel 2
- * @param ch3_alarm_enabled True to enable alarm interrupts on channel 3
- * @param ch0_alarm_triggered True if alarm was triggered on channel 0
- * @param ch1_alarm_triggered True if alarm was triggered on channel 1
- * @param ch2_alarm_triggered True if alarm was triggered on channel 2
- * @param ch3_alarm_triggered True if alarm was triggered on channel 3
- * @param alarm_enable: Contains the 4 alarm enable flags as one 4-bit container
- * @param alarm_triggered: Contains the 4 alarm trigger flags as one 4-bit container
- */
 typedef union {
-    uint8_t raw;
+    uint8_t raw;  // Register as a raw byte
     struct {
-        bool ch0_alarm_enabled : 1;
-        bool ch1_alarm_enabled : 1;
-        bool ch2_alarm_enabled : 1;
-        bool ch3_alarm_enabled : 1;
-        bool ch0_alarm_triggered : 1;
-        bool ch1_alarm_triggered : 1;
-        bool ch2_alarm_triggered : 1;
-        bool ch3_alarm_triggered : 1;
+        bool ch0_alarm_enabled : 1;    // True to enable alarm interrupts on channel 0
+        bool ch1_alarm_enabled : 1;    // True to enable alarm interrupts on channel 1
+        bool ch2_alarm_enabled : 1;    // True to enable alarm interrupts on channel 2
+        bool ch3_alarm_enabled : 1;    // True to enable alarm interrupts on channel 3
+        bool ch0_alarm_triggered : 1;  // True if alarm was triggered on channel 0
+        bool ch1_alarm_triggered : 1;  // True if alarm was triggered on channel 1
+        bool ch2_alarm_triggered : 1;  // True if alarm was triggered on channel 2
+        bool ch3_alarm_triggered : 1;  // True if alarm was triggered on channel 3
     };
     struct {
-        uint8_t alarm_enable : 4;
-        uint8_t alarm_triggered : 4;
+        uint8_t alarm_enable : 4;     // Contains the 4 alarm enable flags as one 4-bit container
+        uint8_t alarm_triggered : 4;  //  Contains the 4 alarm trigger flags as one 4-bit container
     };
 } ads7924_interrupt_control_t;
 
@@ -204,14 +188,19 @@ enum ADS7924_SLEEP_TIME {
 typedef union {
     uint8_t raw;
     struct {
-        uint8_t sleep_time : 3;  // Time between conversions (or scans) which the sensor is sleeping.
-                                 // See ADS7924_SLEEP_TIME for available options.
+        /*
+        Time between conversions (or scans) which the sensor is sleeping.
+        See ADS7924_SLEEP_TIME for available options.
+        */
+        uint8_t sleep_time : 3;
         bool _reserved1 : 1;
-        bool sleep_multiplier_x8_enabled : 1;               // True to multiply sleep time by a factor of 8.
-        bool sleep_divider_x4_enabled : 1;                  // True to divide the sleep time by a factor of 4.
-        bool conversion_stop_on_control_event_enabled : 1;  // True to stop conversions after a control event.
-                                                            // Control events are dictated by the interrupt
-                                                            // configuration mode.
+        bool sleep_multiplier_x8_enabled : 1;  // True to multiply sleep time by a factor of 8.
+        bool sleep_divider_x4_enabled : 1;     // True to divide the sleep time by a factor of 4.
+        /*
+        True to stop conversions after a control event.
+        Control events are dictated by the interrupt configuration mode.
+        */
+        bool conversion_stop_on_control_event_enabled : 1;
         bool _reserved0 : 1;
     };
 } ads7924_sleep_config_t;
@@ -236,9 +225,13 @@ typedef union {
         uint8_t power_up_time_x2_us : 5;                    // Power up time of the ADS7924 (x2us)
         bool power_control_pin_enabled : 1;                 // True to always enable the PWRCON pin; False to disable
         uint8_t power_control_pin_active_high_enabled : 1;  // True enables a logic high for the power control pin
-        bool ch3_to_agnd_enabled : 1;  // True to connects the MUXOUT pin to AGND when CH3 is selected in the mode
-                                       // configuration register (gives 0V for calibration purposes);
-                                       // False (default) for normal operation when CH3 is selected.
+
+        /*
+        True to connects the MUXOUT pin to AGND when CH3 is selected in the mode
+        configuration register (gives 0V for calibration purposes);
+        False (default) for normal operation when CH3 is selected.
+        */
+        bool ch3_to_agnd_enabled : 1;
     };
 } ads7924_power_config_t;
 
