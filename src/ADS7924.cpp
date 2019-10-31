@@ -29,7 +29,7 @@ bool ADS7924::comms_check() {
     ads7924_reset_config_t id;
     read_config(id);
 
-    // LSB is variable, depending on address configuration. Ignoring that bit.
+    // LSB is dependent on address configuration. Ignoring that bit.
     id.raw |= 1;
     return id.raw == ADS7924_ID;
 }
@@ -79,6 +79,15 @@ bool ADS7924::read(uint8_t *output, ads7924_reg_t address, uint8_t length) {
         }
     }
     return result;
+}
+
+/**
+ * Perform a software reset of the ADS7924.
+ */
+void ADS7924::reset() {
+    ads7924_reset_config_t reset;
+    reset.raw = ADS7924_RESET_SEQUENCE;
+    write_config(reset);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
