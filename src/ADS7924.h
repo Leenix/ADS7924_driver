@@ -1,54 +1,122 @@
+#ifndef ADS7924_ADC_H
+#define ADS7924_ADC_H
+
+///////////////////////////////////////////////////////////////////////////////
+// Imports
+
 #include <Arduino.h>
 #include <Wire.h>
 
-const uint8_t DEFAULT_ADS7924_ADDRESS = 0b1001000;
+///////////////////////////////////////////////////////////////////////////////
+// Types and constants
 
+const uint8_t DEFAULT_ADS7924_ADDRESS = 0b1001000;
+const uint8_t ADS7924_ID = 0b00011000;
+const uint8_t ADS7924_NUM_CHANNELS = 4;
+
+// TODO - Reformat library
+///////////////////////////////////////////////////////////////////////////////
+// MODECNTRL
+
+/**
+ * Mode explanation
+ *
+ * Manual-single mode
+ * This mode converts the selected channel once. After the ADC Mode Control register is written, the power-up time (tPU)
+and acquisition time (tACQ) are allowed to elapse. tPU can be set to '0' to effectively bypass if not needed. tACQ time
+is programmable through the ACQCONFIG register, bits[4:0]. Sleep time (tSLEEP) is not used in this mode. After the
+conversion completes, the device waits for a new mode to be set. This mode can be set to Idle to save power. When tPU
+and tACQ are very short, the very short conversion time needed allows a read register operation to be issued on the I2C
+bus immediately after the write operation that initiates this mode. If multiple conversions are needed, the
+manual-single mode can be reissued without requiring the awake mode to be issued in between. Consecutive manual-single
+commands have no tPU period.
+ *
+ * Manual-scan mode
+* This mode converts all of the channels once, starting with the selected channel, as illustrated in Figure 23. After
+the ADC Mode Control register is written, the power-up time (tPU) is allowed to elapse. This value can be set to '0' to
+effectively bypass if not needed. Before each conversion, an acquisition time (tACQ) is allowed to elapse. tACK time is
+programmable through the ACQCONFIG register, bits[4:0]. Sleep time (tSLEEP) is not used in this mode. The input
+multiplexer is automatically incremented as the conversions complete. If, for example, the initial selected channel is
+CH2, the conversion order is CH2, CH3, CH0, and CH1. Data from the conversions are always put into the data register
+that corresponds to a particular channel. For example, CH2 data always goes in register DATA2_H and DATA2_L regardless
+of conversion order. After all four conversions complete, the device waits for a new mode to be set. This mode can be
+set to Idle afterwards to save power. The INT pin can be configured to indicate the completion of each individual
+conversion or it can wait until all four finish. In either case, the appropriate data register is updated after each
+conversion. These registers can be read at any time afterwards. If multiple scan are needed, the manual-scan mode can be
+reissued without requiring the Awake mode to be issued in between.
+ *
+ * Auto-single mode
+ * This mode automatically converts the selected channel continuously. After the ADC Mode Control
+register is written, the power-up time (tPU) is allowed to elapse. This value can be set to '0' to effectively bypass if
+not needed. Before the conversion, an acquisition time (tACQ) is allowed to elapse. tACQ time is programmable
+through the ACQCONFIG register, bits[4:0]. Sleep time (tSLEEP) is not used in this mode. After the conversion
+completes the cycle is repeated.
+This mode can be used with the onboard digital comparator to monitor the status of an input signal with little
+support needed from a host microcontroller. The conversion time is less than the I2C data retrieval time. TI
+suggests stopping this mode by setting the mode to Idle or stopping the conversion by configuring the alarm to
+do so, before retrieving data. The alarm can also be configured to continue the conversion even after an interrupt
+is generated.
+ *
+ * Auto-scan mode
+ * This mode automatically converts all the channels continuously, starting with the selected channel. After the ADC
+Mode Control register is written, the power-up time (tPU) is allowed to elapse. This value can be set to '0' to
+effectively bypass if not needed. Before the conversion, an acquisition time (tACQ) is allowed to elapse. tACQ time is
+programmable through the ACQCONFIG register, bits[4:0]. Sleep time (tSLEEP) is not used in this mode. The input
+multiplexer is automatically incremented as the conversions complete. If, for example, the initial selected channel is
+CH2, the conversion order is CH2, CH3, CH0, CH1, CH2, CH3, and so forth. until the mode is stopped. Data from the
+conversions are always put into the data register that corresponds to a particular channel. For example, CH2 data always
+go in register DATA2_H and DATA2_L regardless of conversion order. This mode can be used with the onboard digital
+comparator to monitor the status of the input signals with little support needed from a host microcontroller. TI
+suggests interrupting this mode and stopping the automatic conversions, either by setting the mode to Idle or
+configuring the alarm to do so, before retrieving data.
+ */
 enum ADS7924_MODE {
-    ADS7924_IDLE = 0,                          //
-    ADS7924_AWAKE = 0b100000,                  //
-    ADS7924_MANUAL_SINGLE = 0b110000,          //
-    ADS7924_MANUAL_SCAN = 0b110010,            //
-    ADS7924_AUTO_SINGLE = 0b110001,            //
-    ADS7924_AUTO_SCAN = 0b110011,              //
-    ADS7924_AUTO_SINGLE_SLEEP = 0b111001,      //
-    ADS7924_AUTO_SCAN_SLEEP = 0b111011,        //
-    ADS7924_AUTO_BURST_SCAN_SLEEP = 0b111111,  //
+    ADS7924_IDLE = 0,                  // All circuits shut down. Lowest power setting.
+    ADS7924_AWAKE = 0b100000,          // All circuits awake and ready to convert.
+    ADS7924_MANUAL_SINGLE = 0b110000,  // Select input channel is converted once
+    ADS7924_MANUAL_SCAN = 0b110010,    // All input channels are converted once
+    ADS7924_AUTO_SINGLE = 0b110001,    // One input channel is continuously converted
+    ADS7924_AUTO_SCAN = 0b110011,      // All input channels are continuously converted
+    ADS7924_AUTO_SINGLE_SLEEP =
+        0b111001,  // One input channel is continuously converted with a programmable sleep time between conversions
+    ADS7924_AUTO_SCAN_SLEEP =
+        0b111011,  // All input channels are continuously converted with a programmable sleep time between conversions
+    ADS7924_AUTO_BURST_SCAN_SLEEP =
+        0b111111,  // All input channels are converted with minimal delay followed by a programmable sleep time
 };
 
 typedef union {
     uint8_t raw;
     struct {
-        uint8_t mode : 6;
         uint8_t channel : 2;
+        uint8_t mode : 6;
     };
-} ads7924_mode_t;
 
-typedef union {
-    uint8_t raw;
-    struct {
-        uint8_t ch0_enable : 1;
-        uint8_t ch1_enable : 1;
-        uint8_t ch2_enable : 1;
-        uint8_t ch3_enable : 1;
-        uint8_t ch0_status : 1;
-        uint8_t ch1_status : 1;
-        uint8_t ch2_status : 1;
-        uint8_t ch3_status : 1;
-    };
-} ads7924_int_control_t;
+} ads7924_mode_control_t;
 
 ///////////////////////////////////////////////////////////////////////////////
-// Interrupt config
+// INTCNTRL
 
-enum ADS7924_INTERRUPT_POLARITY {
-    ADS7924_ACTIVE_HIGH = 1,
-    ADS7924_ACTIVE_LOW = 0,
-};
+typedef union {
+    uint8_t raw;
+    struct {
+        bool ch0_alarm_enabled : 1;
+        bool ch1_alarm_enabled : 1;
+        bool ch2_alarm_enabled : 1;
+        bool ch3_alarm_enabled : 1;
+        bool ch0_alarm_triggered : 1;
+        bool ch1_alarm_triggered : 1;
+        bool ch2_alarm_triggered : 1;
+        bool ch3_alarm_triggered : 1;
+    };
+    struct {
+        uint8_t alarm_enable : 4;
+        uint8_t alarm_triggered : 4;
+    };
+} ads7924_interrupt_control_t;
 
-enum ADS7924_INTERRUPT_MODE {
-    ADS7924_STATIC_INTERRUPT = 1,
-    ADS7924_PULSE_INTERRUPT = 0,
-};
+///////////////////////////////////////////////////////////////////////////////
+// INTCONFIG
 
 enum ADS7924_INTERRUPT_OUTPUT {
     ADS7924_ALARM = 0,
@@ -62,20 +130,15 @@ enum ADS7924_INTERRUPT_OUTPUT {
 typedef union {
     uint8_t raw;
     struct {
-        uint8_t int_trigger_mode : 1;
-        uint8_t int_polarity : 1;
-        uint8_t int_output : 3;
-        uint8_t alarm_threshold : 3;
+        bool pulse_interrupt_enabled : 1;
+        bool interrupt_active_high_enabled : 1;
+        uint8_t alarm_interrupt_output_mode : 3;
+        uint8_t alarm_threshold : 3;  // Number of times that thresholds are exceeded before an alarm is generated
     };
-} ads7924_int_config_t;
+} ads7924_interrupt_config_t;
 
 ///////////////////////////////////////////////////////////////////////////////
-// Sleep config
-
-enum ADS7924_CONVERSION_CONTROL {
-    ADS7924_CONTROL_INDEPENDENT = 0,
-    ADS7924_CONTROL_DEPENDENT = 1,
-};
+// SLPCONFIG
 
 enum ADS7924_SLEEP_TIME {
     ADS7924_SLEEP_2MS = 0,
@@ -91,14 +154,28 @@ enum ADS7924_SLEEP_TIME {
 typedef union {
     uint8_t raw;
     struct {
-        uint8_t sleep_time : 2;
-        uint8_t _reserved1 : 1;
-        uint8_t sleep_divider_x8 : 1;
-        uint8_t sleep_divider_x4 : 1;
-        uint8_t conversion_control : 1;
-        uint8_t _reserved0 : 1;
+        uint8_t sleep_time : 3;
+        bool _reserved1 : 1;
+        bool sleep_multiplier_x8_enabled : 1;
+        bool sleep_divider_x4_enabled : 1;
+        bool conversion_stop_on_control_event_enabled : 1;
+        bool _reserved0 : 1;
     };
 } ads7924_sleep_config_t;
+
+///////////////////////////////////////////////////////////////////////////////
+// ACQCONFIG
+
+typedef union {
+    uint8_t raw;
+    struct {
+        uint8_t acquire_time_x2us : 4;
+        uint8_t _reserved : 4;
+    };
+} ads7924_acquire_config_t;
+
+///////////////////////////////////////////////////////////////////////////////
+// PWRCONFIG
 
 enum ADS7924_CALIBRATION_CONTROL {
     ADS7924_MUXOUT_TO_CH3 = 0,
@@ -108,35 +185,55 @@ enum ADS7924_CALIBRATION_CONTROL {
 typedef union {
     uint8_t raw;
     struct {
-        uint8_t power_up_time : 5;
-        uint8_t power_control_enable : 1;
-        uint8_t power_control_polarity : 1;
-        uint8_t calibration_control : 1;
+        uint8_t power_up_time_x2_us : 5;
+        bool power_control_pin_enabled : 1;
+        uint8_t power_control_pin_active_high_enabled : 1;
+        bool muxout_output_mode : 1;
     };
 } ads7924_power_config_t;
 
-typedef struct {
-    ads7924_int_config_t int_config;
-    ads7924_power_config_t power_config;
-    ads7924_sleep_config_t sleep_config;
-    uint8_t acquire_time;
-} ads7924_config_t;
+///////////////////////////////////////////////////////////////////////////////
+// Reset
+
+typedef union {
+    uint8_t raw;
+} ads7924_reset_config_t;
+
+///////////////////////////////////////////////////////////////////////////////
+// Class definition
 
 class ADS7924 {
    public:
-    ADS7924();
-    static ads7924_config_t config;
+    bool begin(uint8_t address = DEFAULT_ADS7924_ADDRESS);
     void set_address(uint8_t address);
-    void write_config(ads7924_config_t new_config = config);
-    void set_mode(ads7924_mode_t mode);
-    void write_interrupt_control(ads7924_int_control_t control_settings);
-    ads7924_int_control_t read_interrupt_control();
-    uint16_t get_reading(uint8_t channel);
-    void get_readings(uint16_t *readings);
-    void set_limit(uint16_t limit, uint8_t channel, bool high = false);
-    void set_limits(uint16_t *limits);
-    uint16_t get_limit(uint8_t channel, bool high = false);
-    uint16_t get_limits(uint16_t *limits);
+    bool comms_check();
+
+    void write_config(ads7924_mode_control_t config);
+    void write_config(ads7924_interrupt_control_t config);
+    void write_config(ads7924_interrupt_config_t config);
+    void write_config(ads7924_sleep_config_t config);
+    void write_config(ads7924_acquire_config_t config);
+    void write_config(ads7924_power_config_t config);
+    void write_config(ads7924_reset_config_t config);
+
+    void read_config(ads7924_mode_control_t &config);
+    void read_config(ads7924_interrupt_control_t &config);
+    void read_config(ads7924_interrupt_config_t &config);
+    void read_config(ads7924_sleep_config_t &config);
+    void read_config(ads7924_acquire_config_t &config);
+    void read_config(ads7924_power_config_t &config);
+    void read_config(ads7924_reset_config_t &config);
+
+    void read_data(uint16_t &data, uint8_t channel);
+    void read_data(uint16_t *data);
+
+    uint16_t get_data(uint8_t channel);
+
+    void write_high_limit(uint16_t limit, uint8_t channel);
+    void write_low_limit(uint16_t limit, uint8_t channel);
+
+    void read_high_limit(uint16_t &limit, uint8_t channel);
+    void read_low_limit(uint16_t &limit, uint8_t channel);
 
    private:
     typedef enum ADS7924_REGISTER {
@@ -165,11 +262,16 @@ class ADS7924 {
         RESET = 0x16,
     } ads7924_reg_t;
 
-    uint8_t device_address = DEFAULT_ADS7924_ADDRESS;
+    uint8_t _device_address;
 
     // Read from the sensor's registers
     bool read(uint8_t *output, ads7924_reg_t address, uint8_t length = 1);
 
     // Write to the sensor's registers
     bool write(uint8_t *input, ads7924_reg_t address, uint8_t length = 1);
-}
+
+    void write_limit(uint16_t limit, uint8_t channel, bool is_high_limit);
+    void read_limit(uint16_t &limit, uint8_t channel, bool is_high_limit);
+};
+
+#endif
