@@ -253,34 +253,34 @@ class ADS7924 {
     void set_address(uint8_t address);
     bool comms_check();
 
-    void write_config(ads7924_mode_control_t config);
-    void write_config(ads7924_interrupt_control_t config);
-    void write_config(ads7924_interrupt_config_t config);
-    void write_config(ads7924_sleep_config_t config);
-    void write_config(ads7924_acquire_config_t config);
-    void write_config(ads7924_power_config_t config);
-    void write_config(ads7924_reset_config_t config);
+    bool write_config(ads7924_mode_control_t config);
+    bool write_config(ads7924_interrupt_control_t config);
+    bool write_config(ads7924_interrupt_config_t config);
+    bool write_config(ads7924_sleep_config_t config);
+    bool write_config(ads7924_acquire_config_t config);
+    bool write_config(ads7924_power_config_t config);
+    bool write_config(ads7924_reset_config_t config);
 
-    void read_config(ads7924_mode_control_t &config);
-    void read_config(ads7924_interrupt_control_t &config);
-    void read_config(ads7924_interrupt_config_t &config);
-    void read_config(ads7924_sleep_config_t &config);
-    void read_config(ads7924_acquire_config_t &config);
-    void read_config(ads7924_power_config_t &config);
-    void read_config(ads7924_reset_config_t &config);
+    bool read_config(ads7924_mode_control_t &config);
+    bool read_config(ads7924_interrupt_control_t &config);
+    bool read_config(ads7924_interrupt_config_t &config);
+    bool read_config(ads7924_sleep_config_t &config);
+    bool read_config(ads7924_acquire_config_t &config);
+    bool read_config(ads7924_power_config_t &config);
+    bool read_config(ads7924_reset_config_t &config);
 
-    void read_data(uint16_t &data, uint8_t channel);
-    void read_data(uint16_t *data);
+    bool read_data(uint16_t &data, uint8_t channel);
+    bool read_data(uint16_t *data);
 
     uint16_t get_data(uint8_t channel);
 
-    void write_high_limit(uint16_t limit, uint8_t channel);
-    void write_low_limit(uint16_t limit, uint8_t channel);
+    bool write_high_limit(uint16_t limit, uint8_t channel);
+    bool write_low_limit(uint16_t limit, uint8_t channel);
 
-    void read_high_limit(uint16_t &limit, uint8_t channel);
-    void read_low_limit(uint16_t &limit, uint8_t channel);
+    bool read_high_limit(uint16_t &limit, uint8_t channel);
+    bool read_low_limit(uint16_t &limit, uint8_t channel);
 
-    void reset();
+    bool reset();
 
    private:
     typedef enum ADS7924_REGISTER {
@@ -314,8 +314,8 @@ class ADS7924 {
     bool read(uint8_t *output, ads7924_reg_t address, uint8_t length = 1);
     bool write(uint8_t *input, ads7924_reg_t address, uint8_t length = 1);
 
-    void write_limit(uint16_t limit, uint8_t channel, bool is_high_limit);
-    void read_limit(uint16_t &limit, uint8_t channel, bool is_high_limit);
+    bool write_limit(uint16_t limit, uint8_t channel, bool is_high_limit);
+    bool read_limit(uint16_t &limit, uint8_t channel, bool is_high_limit);
 };
 
 #endif
