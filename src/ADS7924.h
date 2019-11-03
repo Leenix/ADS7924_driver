@@ -253,24 +253,24 @@ class ADS7924 {
     void set_address(uint8_t address);
     bool comms_check();
 
-    bool write_config(ads7924_mode_control_t config);
-    bool write_config(ads7924_interrupt_control_t config);
-    bool write_config(ads7924_interrupt_config_t config);
-    bool write_config(ads7924_sleep_config_t config);
-    bool write_config(ads7924_acquire_config_t config);
-    bool write_config(ads7924_power_config_t config);
-    bool write_config(ads7924_reset_config_t config);
+    bool write(ads7924_mode_control_t config);
+    bool write(ads7924_interrupt_control_t config);
+    bool write(ads7924_interrupt_config_t config);
+    bool write(ads7924_sleep_config_t config);
+    bool write(ads7924_acquire_config_t config);
+    bool write(ads7924_power_config_t config);
+    bool write(ads7924_reset_config_t config);
 
-    bool read_config(ads7924_mode_control_t &config);
-    bool read_config(ads7924_interrupt_control_t &config);
-    bool read_config(ads7924_interrupt_config_t &config);
-    bool read_config(ads7924_sleep_config_t &config);
-    bool read_config(ads7924_acquire_config_t &config);
-    bool read_config(ads7924_power_config_t &config);
-    bool read_config(ads7924_reset_config_t &config);
+    bool read(ads7924_mode_control_t &config);
+    bool read(ads7924_interrupt_control_t &config);
+    bool read(ads7924_interrupt_config_t &config);
+    bool read(ads7924_sleep_config_t &config);
+    bool read(ads7924_acquire_config_t &config);
+    bool read(ads7924_power_config_t &config);
+    bool read(ads7924_reset_config_t &config);
 
-    bool read_data(uint16_t &data, uint8_t channel);
-    bool read_data(uint16_t *data);
+    bool read(uint16_t &data, uint8_t channel);
+    bool read(uint16_t *data);
 
     uint16_t get_data(uint8_t channel);
 

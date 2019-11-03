@@ -29,10 +29,10 @@ void ADS7924::set_address(uint8_t address) {
 bool ADS7924::comms_check() {
     ads7924_reset_config_t id;
 
-    bool successful = read_config(id);
+    bool successful = read(id);
     uint8_t retries = 0;
     while (not successful and retries < 10) {
-        successful = read_config(id);
+        successful = read(id);
         retries++;
         delay(10);
         Log.trace(F("AQ - id retrieval failed; retrying (%d)\n"), retries);
@@ -98,7 +98,7 @@ bool ADS7924::read(uint8_t *output, ads7924_reg_t address, uint8_t length) {
 bool ADS7924::reset() {
     ads7924_reset_config_t reset;
     reset.raw = ADS7924_RESET_SEQUENCE;
-    return write_config(reset);
+    return write(reset);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -108,85 +108,85 @@ bool ADS7924::reset() {
  * Write a configuration to the ADC's registers.
  * @param config: Configuration to be written.
  */
-bool ADS7924::write_config(ads7924_mode_control_t config) { return write((uint8_t *)&config, MODE_CONTROL); }
+bool ADS7924::write(ads7924_mode_control_t config) { return write((uint8_t *)&config, MODE_CONTROL); }
 
 /**
  * Write a configuration to the ADC's registers.
  * @param config: Configuration to be written.
  */
-bool ADS7924::write_config(ads7924_interrupt_control_t config) { return write((uint8_t *)&config, INT_CONTROL); }
+bool ADS7924::write(ads7924_interrupt_control_t config) { return write((uint8_t *)&config, INT_CONTROL); }
 
 /**
  * Write a configuration to the ADC's registers.
  * @param config: Configuration to be written.
  */
-bool ADS7924::write_config(ads7924_interrupt_config_t config) { return write((uint8_t *)&config, INT_CONFIG); }
+bool ADS7924::write(ads7924_interrupt_config_t config) { return write((uint8_t *)&config, INT_CONFIG); }
 
 /**
  * Write a configuration to the ADC's registers.
  * @param config: Configuration to be written.
  */
-bool ADS7924::write_config(ads7924_sleep_config_t config) { return write((uint8_t *)&config, SLEEP_CONFIG); }
+bool ADS7924::write(ads7924_sleep_config_t config) { return write((uint8_t *)&config, SLEEP_CONFIG); }
 
 /**
  * Write a configuration to the ADC's registers.
  * @param config: Configuration to be written.
  */
-bool ADS7924::write_config(ads7924_acquire_config_t config) { return write((uint8_t *)&config, ACQUIRE_TIME_CONFIG); }
+bool ADS7924::write(ads7924_acquire_config_t config) { return write((uint8_t *)&config, ACQUIRE_TIME_CONFIG); }
 
 /**
  * Write a configuration to the ADC's registers.
  * @param config: Configuration to be written.
  */
-bool ADS7924::write_config(ads7924_power_config_t config) { return write((uint8_t *)&config, POWER_CONFIG); }
+bool ADS7924::write(ads7924_power_config_t config) { return write((uint8_t *)&config, POWER_CONFIG); }
 
 /**
  * Write a configuration to the ADC's registers.
  * @param config: Configuration to be written.
  */
-bool ADS7924::write_config(ads7924_reset_config_t config) { return write((uint8_t *)&config, RESET); }
+bool ADS7924::write(ads7924_reset_config_t config) { return write((uint8_t *)&config, RESET); }
 
 /**
  * Read a configuration in from the ADC's registers.
  * @param config: Object for the configuration to be read into.
  */
-bool ADS7924::read_config(ads7924_mode_control_t &config) { return read((uint8_t *)&config, MODE_CONTROL); }
+bool ADS7924::read(ads7924_mode_control_t &config) { return read((uint8_t *)&config, MODE_CONTROL); }
 
 /**
  * Read a configuration in from the ADC's registers.
  * @param config: Object for the configuration to be read into.
  */
-bool ADS7924::read_config(ads7924_interrupt_control_t &config) { return read((uint8_t *)&config, INT_CONTROL); }
+bool ADS7924::read(ads7924_interrupt_control_t &config) { return read((uint8_t *)&config, INT_CONTROL); }
 
 /**
  * Read a configuration in from the ADC's registers.
  * @param config: Object for the configuration to be read into.
  */
-bool ADS7924::read_config(ads7924_interrupt_config_t &config) { return read((uint8_t *)&config, INT_CONFIG); }
+bool ADS7924::read(ads7924_interrupt_config_t &config) { return read((uint8_t *)&config, INT_CONFIG); }
 
 /**
  * Read a configuration in from the ADC's registers.
  * @param config: Object for the configuration to be read into.
  */
-bool ADS7924::read_config(ads7924_sleep_config_t &config) { return read((uint8_t *)&config, SLEEP_CONFIG); }
+bool ADS7924::read(ads7924_sleep_config_t &config) { return read((uint8_t *)&config, SLEEP_CONFIG); }
 
 /**
  * Read a configuration in from the ADC's registers.
  * @param config: Object for the configuration to be read into.
  */
-bool ADS7924::read_config(ads7924_acquire_config_t &config) { return read((uint8_t *)&config, ACQUIRE_TIME_CONFIG); }
+bool ADS7924::read(ads7924_acquire_config_t &config) { return read((uint8_t *)&config, ACQUIRE_TIME_CONFIG); }
 
 /**
  * Read a configuration in from the ADC's registers.
  * @param config: Object for the configuration to be read into.
  */
-bool ADS7924::read_config(ads7924_power_config_t &config) { return read((uint8_t *)&config, POWER_CONFIG); }
+bool ADS7924::read(ads7924_power_config_t &config) { return read((uint8_t *)&config, POWER_CONFIG); }
 
 /**
  * Read a configuration in from the ADC's registers.
  * @param config: Object for the configuration to be read into.
  */
-bool ADS7924::read_config(ads7924_reset_config_t &config) { return read((uint8_t *)&config, RESET); }
+bool ADS7924::read(ads7924_reset_config_t &config) { return read((uint8_t *)&config, RESET); }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Data
@@ -197,7 +197,7 @@ bool ADS7924::read_config(ads7924_reset_config_t &config) { return read((uint8_t
  * @param data: Variable for the data to be read into.
  * @param channel: Data channel to read (0-3)
  */
-bool ADS7924::read_data(uint16_t &data, uint8_t channel) {
+bool ADS7924::read(uint16_t &data, uint8_t channel) {
     channel = constrain(channel, 0, 4);
     uint8_t channel_address = ADS7924_REGISTER::DATA0_U + (channel * 2);
 
@@ -215,7 +215,7 @@ bool ADS7924::read_data(uint16_t &data, uint8_t channel) {
  */
 uint16_t ADS7924::get_data(uint8_t channel) {
     uint16_t data;
-    read_data(data, channel);
+    read(data, channel);
     return data;
 }
 
@@ -225,7 +225,7 @@ uint16_t ADS7924::get_data(uint8_t channel) {
  * All channels are read at once, which is faster than reading each channel separately.
  * @param data: Buffer to read data into. Must be at least 8 bytes.
  */
-bool ADS7924::read_data(uint16_t *data) {
+bool ADS7924::read(uint16_t *data) {
     bool successful = read((uint8_t *)&data, ADS7924_REGISTER::DATA0_U, ADS7924_NUM_CHANNELS * 2);
     if (successful) {
         for (size_t i = 0; i < ADS7924_NUM_CHANNELS; i++) {
